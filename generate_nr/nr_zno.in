@@ -11,12 +11,12 @@ neigh_modify every 10 delay 0 check no
 fix 1 all nve
 fix 2 all qeq/reax 1 0.0 10.0 1.0e-6 reax/c
 fix 3 all langevin 375.0 375.0 150.0 54328
-# fix walls all wall/reflect zlo -5.6 zhi 90.8
+fix walls all wall/reflect zlo -5.6 zhi 90.8
 timestep 1
 compute peratom all pe/atom
 compute pe all reduce sum c_peratom
 #dump 1 all custom 250 dump.Cu.comp.* id xs ys zs c_csym 
-dump 3 all xyz 100 dump.xyz
+dump 3 all xyz 1000 dump.xyz
 thermo_style custom step temp etotal press pe c_pe
 thermo 10
-run 5000
+run 500000
