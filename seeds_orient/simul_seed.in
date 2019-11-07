@@ -1,0 +1,41 @@
+# REAX potential for ZnO system
+# .....
+units real
+boundary p p s
+atom_style charge
+read_data final.lmp
+
+region down block -20.0 22.0 -22.0 22.0 -22.0 -14.0
+group sustract region down 
+
+region up block -20.0 22.0 -20.0 22.0 -15.0 22.0
+group seed region up 
+
+velocity seed create 400.0 4928459 rot yes dist gaussian
+velocity sustract zero linear
+
+pair_style coul/cut 3.5
+pair_coeff * * 3.5
+pair_coeff * * 3.5
+neighbor 2 bin
+neigh_modify every 10 delay 0 check no
+
+# region down block -20.0 -20.0 -22.0 22.0 22.0 -14.0
+# group sustract region down 
+fix 1 all nve
+# Esto no se para que es y no lo encuentro en el manual
+# fix 2 all qeq/reax 1 0.0 10.0 1.0e-6 reax/c
+fix 2 all nvt temp 600.0 600.0 10
+# fix 3 sustract freeze
+#esto esta en N/C newton entre coulomp no me fije si esa es la unidad del campo electrico para units real voy a revisar y si eso lo cambio
+fix 3 seed efield 0.0 0.0 30000.0
+
+timestep 1
+compute peratom all pe/atom
+compute pe all reduce sum c_peratom
+#dump 1 all custom 250 dump.Seeds.comp.* id xs ys zs c_csym 
+#voy a dejar el dump que pusiste para generar las semillas le puse el asterisco para que le cambie el nombre cada ves que genere uno 
+dump 3 all xyz 100 dump.xyz
+thermo_style custom step temp etotal press pe c_pe
+thermo 10
+run 5000

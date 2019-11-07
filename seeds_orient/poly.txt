@@ -1,2 +1,2 @@
-box 50 50 7
-random 50
+box 30 30 7
+node 0 0 -18 random

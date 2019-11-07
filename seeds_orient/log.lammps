@@ -1,0 +1,73 @@
+LAMMPS (22 Feb 2018)
+  using 8 OpenMP thread(s) per MPI task
+# REAX potential for ZnO system
+# .....
+units real
+boundary p p s
+atom_style charge
+read_data final.lmp
+  orthogonal box = (-20 -20 -22) to (20.8854 20.9452 22.9857)
+  1 by 2 by 2 MPI processor grid
+  reading atoms ...
+  1851 atoms
+
+region down block -20.0 22.0 -22.0 22.0 -22.0 -14.0
+group sustract region down
+531 atoms in group sustract
+
+region up block -20.0 22.0 -20.0 22.0 -15.0 22.0
+group seed region up
+1356 atoms in group seed
+
+velocity seed create 400.0 4928459 rot yes dist gaussian
+velocity sustract zero linear
+
+pair_style coul/cut 3.5
+pair_coeff * * 3.5
+pair_coeff * * 3.5
+neighbor 2 bin
+neigh_modify every 10 delay 0 check no
+
+# region down block -20.0 -20.0 -22.0 22.0 22.0 -14.0
+# group sustract region down
+fix 1 all nve
+# Esto no se para que es y no lo encuentro en el manual
+# fix 2 all qeq/reax 1 0.0 10.0 1.0e-6 reax/c
+fix 2 all nvt temp 600.0 600.0 10
+# fix 3 sustract freeze
+#esto esta en N/C newton entre coulomp no me fije si esa es la unidad del campo electrico para units real voy a revisar y si eso lo cambio
+fix 3 seed efield 0.0 0.0 30000.0
+
+timestep 1
+compute peratom all pe/atom
+compute pe all reduce sum c_peratom
+#dump 1 all custom 250 dump.Seeds.comp.* id xs ys zs c_csym
+#voy a dejar el dump que pusiste para generar las semillas le puse el asterisco para que le cambie el nombre cada ves que genere uno
+dump 3 all xyz 100 dump.xyz
+thermo_style custom step temp etotal press pe c_pe
+thermo 10
+run 5000
+WARNING: One or more atoms are time integrated more than once (../modify.cpp:279)
+Neighbor list info ...
+  update every 10 steps, delay 0 steps, check no
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 5.5
+  ghost atom cutoff = 5.5
+  binsize = 2.75, bins = 15 15 13
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair coul/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/atomonly/newton
+      stencil: half/bin/3d/newton
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 10.59 | 10.77 | 10.96 Mbytes
+Step Temp TotEng Press PotEng c_pe 
+       0    292.96548    744328.45    299589.73    742712.89    742712.89 
+      10            0    2554860.1    69707.045    2554860.1    2554860.1 
+      20            0    2468665.1    35447.773    2468665.1    2468665.1 
+      30            0    2317813.7    22578.169    2317813.7    2317813.7 
+      40            0    2157335.7     15827.19    2157335.7    2157335.7 
+      50            0    2008397.7    11817.125    2008397.7    2008397.7 
+      60            0    1883889.7    9252.5609    1883889.7    1883889.7 
+ERROR: Lost atoms: original 1851 current 1847 (../thermo.cpp:442)
+Last command: run 5000
